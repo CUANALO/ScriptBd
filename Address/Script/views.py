@@ -9,10 +9,10 @@ from django.http import JsonResponse
 
 def index(request):
     print('hola')
-    path =('/home/cecilio/Documentos/Django/Address/Script/file.js')
+    path =('/home/creatur/Documentos/python/django/ScriptBd/Address/Script/file.js')
     with open(path) as fd:
         leer = json.load(fd)
-    conn = psycopg2.connect(database='data',user='postgres',password='root', host='localhost')
+    conn = psycopg2.connect(database='Reservations1',user='usuario',password='root', host='localhost')
     cur = conn.cursor()
     cur.execute("""SELECT * FROM "Index_address" """)
 #    leer=json.loads(open('file.js').read())
@@ -30,7 +30,9 @@ def index(request):
     #     data.longitude = datos[8]
     #     data.operation_time = datos[9]
     #     data.save()
-    #
+
+######################################################################################################################
+##### Este bloque compara los datos de la BD y el archivo JSON ,toma los datos de ambos que coincidan por codigo IATA
     code=[]
     code2=[]
     lista=[]
@@ -49,11 +51,14 @@ def index(request):
                             "Code":str(js['_Code'])
                         }
                         code.append(object)
-
     tamcode=len(code)
-    rest=tamjson-tamcode
+###############################FIN DEL BLOQUE###########################################################################
+######################################################################################################################
 
-#for query in cur2:
+#################################################################################3#####################################
+#######################################################################################################################
+    # Bloque que genera diccionario con registros del JSOn sin codigo IATA que se registraran en la BD
+    rest=tamjson-tamcode
 
     for js in jsons:
         if not '_IATA' in js:
@@ -68,26 +73,33 @@ def index(request):
                 code2.append(object)
 
     print (len(code2))
+################################################FIN DEL BLOQUE##############################################################
+#########################################################################################################################
 
+#############################################################################################################################33333
+##############################################################################################################################
+# Este boque regisstra los datos del primer diccionario , de los lugares no registrados en la BD pero coinciden con codigos IATA del Arcvhio JSON
     for data in queryAddres:
-#    print 'count a 0'
+###########3 VARIABLE CONTADOR SIRVE PARA SABER SI LA CIUDAD O LUGAR EXISTE EN LA BD,SE RELLENA CONTANDO LAS VECES QUE APARECE EN LA BD
         contador=0
         for q in code:
             city=q['Name']
             contador=lista.count(city)
 #            print 'contador'
 #            print contador
+############ EN ESTA SECCION SE REGISTRA EL CODE DEL JSON A LOS LUGARES DE LA BD TOMANDO COMO REFERENCIA DE COMPRACION EL CODIGO IATA
             if q['IATA'] == data.code_oag:
+###########para SABER SI YA TIENE code REGISTRADO SE PREGUNTA SI EL VALOR ES == None
                 if data.code==None:
-                    print ('registrando codigo')
                     dt = data.id
                     jss = q['Code']
                     update=IndexAddress.objects.get(id=dt)
                     update.code=jss
                     update.save()
+############CUANDO LA CIUDAD NO ESTA REGISTRADA EL CONTADOR SERA ==0 LO QUE NOS DICE QUE DEBEMOS REGISTRARLA
             if contador == 0:
+                #########cuando coincian se realiza el registro
                 if data.code_oag == q['IATA']:
-                    print ('no existe se registra')
                     City= q['Name']
                     Oag= q['IATA']
                     Description=data.description
@@ -109,7 +121,13 @@ def index(request):
                     query.operation_time=Operation
                     query.code=Code
                     query.save()
+####################################################################################################################
+##########################FIN DEL BLOQUE############################################################################
+######################################################################################################################
 
+########################################################################################################################
+#######################################################################################################################
+#rEGISTRA EN L A BD LOS DATOS DEL SEGUNDO DICCIONARIO CREADO
     for datas in code2:
         conts=0
         code=datas['Code']
